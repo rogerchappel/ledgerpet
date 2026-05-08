@@ -1,0 +1,26 @@
+{
+  "name": "ledgerpet",
+  "version": "0.1.0",
+  "mode": "local-first",
+  "defaultFixture": "fixtures/sample",
+  "watermark": "LEDGERPET_SYNTHETIC_SAMPLE_DO_NOT_USE_AS_REAL_FINANCIAL_DATA",
+  "commands": [
+    {
+      "name": "smoke",
+      "run": "node src/cli.js inspect fixtures/sample --scenario ghost-payment --output out/smoke --format markdown"
+    },
+    {
+      "name": "validate",
+      "run": "bash scripts/validate.sh"
+    }
+  ],
+  "scenarios": [
+    "duplicate-invoice",
+    "ghost-payment",
+    "vendor-bank-swap",
+    "weekend-rush",
+    "round-dollar-split"
+  ],
+  "outputs": ["report.json", "report.md"],
+  "networkRequired": false
+}
