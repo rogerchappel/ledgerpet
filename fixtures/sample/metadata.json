@@ -1,0 +1,7 @@
+{
+  "name": "sample-safe-ledgerpet-fixture",
+  "watermark": "LEDGERPET_SYNTHETIC_SAMPLE_DO_NOT_USE_AS_REAL_FINANCIAL_DATA",
+  "currency": "USD",
+  "period": "2026-02",
+  "description": "Synthetic vendors, invoices, and payments for local ledgerpet demos. No real company or bank data."
+}
