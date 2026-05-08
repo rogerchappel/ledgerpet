@@ -1,0 +1,8 @@
+[
+  {
+    "type": "unmatched_payment",
+    "severity": "critical",
+    "evidence": ["PAY-GHOST-9001", "INV-NOT-FOUND"],
+    "message": "A payment points at a missing invoice."
+  }
+]
