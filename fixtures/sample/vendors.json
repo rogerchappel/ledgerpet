@@ -1,0 +1,5 @@
+[
+  { "vendor_id": "VEN-ACME", "name": "Acme Paper Moon", "category": "supplies", "bank_account_last4": "1024", "risk_tier": "low" },
+  { "vendor_id": "VEN-NOVA", "name": "Nova Facilities Lab", "category": "facilities", "bank_account_last4": "2048", "risk_tier": "medium" },
+  { "vendor_id": "VEN-ORBIT", "name": "Orbit Advisory Sandbox", "category": "consulting", "bank_account_last4": "4096", "risk_tier": "medium" }
+]
