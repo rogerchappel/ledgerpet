@@ -1,0 +1,4 @@
+payment_id,invoice_id,vendor_id,paid_at,amount,method
+PAY-2001,INV-1001,VEN-ACME,2026-02-14,1250.40,ach
+PAY-2002,INV-1002,VEN-NOVA,2026-02-18,9800,ach
+PAY-2003,INV-1003,VEN-ORBIT,2026-02-19,3125.75,wire
