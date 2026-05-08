@@ -1,0 +1,40 @@
+{
+  "name": "ledgerpet",
+  "version": "0.1.0",
+  "description": "Local-first synthetic finance anomaly trainer for testing agents without real ledger data.",
+  "type": "module",
+  "bin": {
+    "ledgerpet": "./src/cli.js"
+  },
+  "main": "./src/index.js",
+  "exports": {
+    ".": "./src/index.js"
+  },
+  "files": [
+    "src",
+    "fixtures",
+    "examples",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "test": "node --test tests/*.test.js",
+    "check": "node --check src/*.js && node --check tests/*.js",
+    "build": "node scripts/build-check.js",
+    "smoke": "node src/cli.js inspect fixtures/sample --scenario ghost-payment --output out/smoke --format markdown && test -f out/smoke/report.md",
+    "package:smoke": "npm pack --dry-run",
+    "release:check": "npm run check && npm test && npm run smoke && npm run package:smoke"
+  },
+  "keywords": [
+    "finance-ops",
+    "synthetic-data",
+    "agent-eval",
+    "local-first",
+    "cli"
+  ],
+  "author": "Roger Chappel",
+  "license": "MIT",
+  "engines": {
+    "node": ">=20"
+  }
+}
