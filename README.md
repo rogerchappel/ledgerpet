@@ -13,6 +13,12 @@ Agent demos often need finance-like data. Real ledgers are sensitive; random CSV
 ## Install
 
 ```sh
+npm install ledgerpet
+```
+
+Or try it locally:
+
+```sh
 git clone https://github.com/rogerchappel/ledgerpet.git
 cd ledgerpet
 npm install
