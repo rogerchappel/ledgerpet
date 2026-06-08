@@ -36,5 +36,13 @@
   "license": "MIT",
   "engines": {
     "node": ">=20"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rogerchappel/ledgerpet.git"
+  },
+  "bugs": {
+    "url": "https://github.com/rogerchappel/ledgerpet/issues"
+  },
+  "homepage": "https://github.com/rogerchappel/ledgerpet#readme"
 }
