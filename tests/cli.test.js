@@ -12,3 +12,18 @@ test("CLI smoke writes markdown report with fixtures", async () => {
   const markdown = await readFile(join(output, "report.md"), "utf8");
   assert.ok(markdown.includes("unmatched_payment"));
 });
+
+test("CLI help exits cleanly with usage text", async () => {
+  const writes = [];
+  const originalLog = console.log;
+  try {
+    console.log = (value = "") => writes.push(String(value));
+    const code = await main(["--help"]);
+    assert.equal(code, 0);
+  } finally {
+    console.log = originalLog;
+  }
+  const output = writes.join("\n");
+  assert.match(output, /Usage:/);
+  assert.match(output, /ledgerpet inspect/);
+});
