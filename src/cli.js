@@ -1,12 +1,20 @@
 #!/usr/bin/env node
+import { createRequire } from "node:module";
 import { runInspection, listScenarios, SYNTHETIC_WATERMARK } from "./index.js";
 
-const HELP = `ledgerpet — local-first synthetic finance anomaly trainer\n\nUsage:\n  ledgerpet inspect <fixture-dir> [--scenario <name>] [--output <dir>] [--format json|markdown]\n  ledgerpet scenarios\n  ledgerpet --help\n\nSafety:\n  ${SYNTHETIC_WATERMARK}\n  Real finance data is refused unless you intentionally create compatible watermarked fixtures.\n`;
+const require = createRequire(import.meta.url);
+const { version } = require("../package.json");
+
+const HELP = `ledgerpet — local-first synthetic finance anomaly trainer\n\nUsage:\n  ledgerpet inspect <fixture-dir> [--scenario <name>] [--output <dir>] [--format json|markdown]\n  ledgerpet scenarios\n  ledgerpet --version\n  ledgerpet --help\n\nSafety:\n  ${SYNTHETIC_WATERMARK}\n  Real finance data is refused unless you intentionally create compatible watermarked fixtures.\n`;
 
 export async function main(argv = process.argv.slice(2)) {
   const [command, maybeFixture, ...rest] = argv;
   if (!command || command === "--help" || command === "-h") {
     console.log(HELP);
+    return 0;
+  }
+  if (command === "--version" || command === "-v") {
+    console.log(version);
     return 0;
   }
   if (command === "scenarios") {

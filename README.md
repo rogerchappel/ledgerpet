@@ -53,6 +53,7 @@ npx ledgerpet inspect fixtures/sample --scenario duplicate-invoice --output out/
 ```sh
 ledgerpet inspect <fixture-dir> [--scenario <name>] [--output <dir>] [--format json|markdown]
 ledgerpet scenarios
+ledgerpet --version
 ledgerpet --help
 ```
 
