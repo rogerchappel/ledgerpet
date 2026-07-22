@@ -13,11 +13,14 @@ export function detectDuplicateInvoices(fixture) {
   const findings = [];
   for (const invoice of fixture.invoices) {
     const key = `${invoice.vendor_id}:${invoice.amount}:${invoice.category}`;
-    const prior = seen.get(key);
-    if (prior && Math.abs(daysBetween(prior.due_date, invoice.due_date)) <= 7) {
-      findings.push({ id: `FIND-DUP-${findings.length + 1}`, type: "duplicate_invoice", severity: "high", evidence: [prior.invoice_id, invoice.invoice_id], message: "Possible duplicate invoice: same vendor, amount, category, and close due dates." });
+    const priorInvoices = seen.get(key) ?? [];
+    for (const prior of priorInvoices) {
+      if (Math.abs(daysBetween(prior.due_date, invoice.due_date)) <= 7) {
+        findings.push({ id: `FIND-DUP-${findings.length + 1}`, type: "duplicate_invoice", severity: "high", evidence: [prior.invoice_id, invoice.invoice_id], message: "Possible duplicate invoice: same vendor, amount, category, and close due dates." });
+      }
     }
-    seen.set(key, invoice);
+    priorInvoices.push(invoice);
+    seen.set(key, priorInvoices);
   }
   return findings;
 }
