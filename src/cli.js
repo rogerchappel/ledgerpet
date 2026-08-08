@@ -9,15 +9,22 @@ const HELP = `ledgerpet — local-first synthetic finance anomaly trainer\n\nUsa
 
 export async function main(argv = process.argv.slice(2)) {
   const [command, maybeFixture, ...rest] = argv;
-  if (!command || command === "--help" || command === "-h") {
+  if (!command) {
+    console.log(HELP);
+    return 0;
+  }
+  if (command === "--help" || command === "-h") {
+    rejectUnexpectedArguments(argv.slice(1), command);
     console.log(HELP);
     return 0;
   }
   if (command === "--version" || command === "-v") {
+    rejectUnexpectedArguments(argv.slice(1), command);
     console.log(version);
     return 0;
   }
   if (command === "scenarios") {
+    rejectUnexpectedArguments(argv.slice(1), command);
     console.log(listScenarios().join("\n"));
     return 0;
   }
@@ -40,12 +47,30 @@ function parseOptions(args) {
   for (let i = 0; i < args.length; i += 1) {
     const arg = args[i];
     const value = args[i + 1];
-    if (arg === "--scenario") { options.scenario = value; i += 1; continue; }
-    if (arg === "--output") { options.outputDir = value; i += 1; continue; }
-    if (arg === "--format") { options.format = value; i += 1; continue; }
+    if (["--scenario", "--output", "--format"].includes(arg)) {
+      if (value === undefined || value.startsWith("--")) {
+        throw new Error(`Missing value for ${arg}`);
+      }
+      if (arg === "--scenario") options.scenario = value;
+      if (arg === "--output") options.outputDir = value;
+      if (arg === "--format") {
+        if (!["json", "markdown"].includes(value)) {
+          throw new Error(`Unsupported format: ${value}. Expected json or markdown`);
+        }
+        options.format = value;
+      }
+      i += 1;
+      continue;
+    }
     throw new Error(`Unknown option: ${arg}`);
   }
   return options;
+}
+
+function rejectUnexpectedArguments(args, command) {
+  if (args.length > 0) {
+    throw new Error(`Unexpected argument for ${command}: ${args[0]}`);
+  }
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
