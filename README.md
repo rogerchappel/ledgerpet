@@ -44,6 +44,7 @@ npx ledgerpet inspect fixtures/sample --scenario duplicate-invoice --output out/
 
 - Loads local synthetic fixture files: `metadata.json`, `vendors.json`, `invoices.csv`, `payments.csv`.
 - Refuses fixtures missing the watermark: `LEDGERPET_SYNTHETIC_SAMPLE_DO_NOT_USE_AS_REAL_FINANCIAL_DATA`.
+- Requires every invoice and payment `amount` to be a finite number; decimal and zero values are valid.
 - Injects deterministic scenarios such as duplicate invoices, ghost payments, vendor bank swaps, weekend rush payments, and round-dollar splits.
 - Runs simple detectors and scores findings with precision, recall, and a 0-100 score.
 - Writes `report.json` and optional `report.md` locally.
