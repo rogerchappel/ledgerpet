@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
-import { access, mkdtemp, readFile } from "node:fs/promises";
+import { access, cp, mkdtemp, readFile, writeFile } from "node:fs/promises";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
@@ -65,6 +65,19 @@ test("CLI rejects unsupported report formats without writing reports", async () 
   const result = spawnSync(process.execPath, ["src/cli.js", "inspect", "fixtures/sample", "--output", output, "--format", "yaml"], { encoding: "utf8" });
   assert.notEqual(result.status, 0);
   assert.match(result.stderr, /Unsupported format: yaml\. Expected json or markdown/);
+  await assert.rejects(access(output));
+});
+
+test("CLI rejects malformed fixture amounts without writing reports", async () => {
+  const fixture = join(await mkdtemp(join(tmpdir(), "ledgerpet-fixture-")), "fixture");
+  const output = join(await mkdtemp(join(tmpdir(), "ledgerpet-amount-output-")), "reports");
+  await cp("fixtures/sample", fixture, { recursive: true });
+  const invoices = await readFile(join(fixture, "invoices.csv"), "utf8");
+  await writeFile(join(fixture, "invoices.csv"), invoices.replace("1250.40", "not-a-number"));
+
+  const result = spawnSync(process.execPath, ["src/cli.js", "inspect", fixture, "--output", output, "--format", "json"], { encoding: "utf8" });
+  assert.notEqual(result.status, 0);
+  assert.match(result.stderr, /invoices\.csv:2 field amount must be a finite number/);
   await assert.rejects(access(output));
 });
 
