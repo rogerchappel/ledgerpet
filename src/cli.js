@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 import { createRequire } from "node:module";
+import { realpathSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 import { runInspection, listScenarios, SYNTHETIC_WATERMARK } from "./index.js";
 
 const require = createRequire(import.meta.url);
@@ -73,7 +75,7 @@ function rejectUnexpectedArguments(args, command) {
   }
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (fileURLToPath(import.meta.url) === realpathSync(process.argv[1])) {
   main().then((code) => { process.exitCode = code; }).catch((error) => {
     console.error(error.message);
     process.exitCode = 1;
