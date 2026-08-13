@@ -12,19 +12,31 @@ Agent demos often need finance-like data. Real ledgers are sensitive; random CSV
 
 ## Install
 
-```sh
-npm install ledgerpet
-```
-
-Or try it locally:
+ledgerpet is not published to the npm registry. Install and run it from a
+source checkout:
 
 ```sh
 git clone https://github.com/rogerchappel/ledgerpet.git
 cd ledgerpet
-npm install
+npm ci
+node src/cli.js --help
 ```
 
 No runtime dependencies are required.
+
+Versioned GitHub releases may also include a `ledgerpet-<version>.tgz` package
+asset. When one is available on the
+[releases page](https://github.com/rogerchappel/ledgerpet/releases), download
+that asset and install the local file (replace `<version>` with the release
+version):
+
+```sh
+npm install ./ledgerpet-<version>.tgz
+./node_modules/.bin/ledgerpet --help
+```
+
+Installing a downloaded tarball this way does not ask npm to resolve a
+`ledgerpet` package from the registry.
 
 ## Quickstart
 
@@ -34,10 +46,10 @@ node src/cli.js inspect fixtures/sample --scenario ghost-payment --output out/gh
 cat out/ghost/report.md
 ```
 
-After package installation or linking:
+After installing a GitHub release package asset:
 
 ```sh
-npx ledgerpet inspect fixtures/sample --scenario duplicate-invoice --output out/dup --format markdown
+./node_modules/.bin/ledgerpet inspect fixtures/sample --scenario duplicate-invoice --output out/dup --format markdown
 ```
 
 ## What it does
@@ -100,6 +112,7 @@ npm run check
 npm test
 npm run build
 npm run smoke
+npm run docs:smoke
 bash scripts/validate.sh
 ```
 
