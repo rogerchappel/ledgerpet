@@ -1,7 +1,7 @@
 import { LedgerpetError } from "./errors.js";
 
 export function parseCsv(text, source = "csv") {
-  const lines = text.replace(/^\uFEFF/, "").trim().split(/\r?\n/).filter(Boolean);
+  const lines = splitCsvRecords(text.replace(/^\uFEFF/, "").trim()).filter(Boolean);
   if (lines.length === 0) return [];
   const headers = splitCsvLine(lines[0]);
   return lines.slice(1).map((line, index) => {
@@ -11,6 +11,31 @@ export function parseCsv(text, source = "csv") {
     }
     return Object.fromEntries(headers.map((header, i) => [header, cells[i]]));
   });
+}
+
+function splitCsvRecords(text) {
+  const records = [];
+  let record = "";
+  let inQuotes = false;
+  for (let i = 0; i < text.length; i += 1) {
+    const char = text[i];
+    const next = text[i + 1];
+    if (char === '"' && inQuotes && next === '"') {
+      record += '""';
+      i += 1;
+    } else if (char === '"') {
+      inQuotes = !inQuotes;
+      record += char;
+    } else if ((char === "\n" || (char === "\r" && next === "\n")) && !inQuotes) {
+      records.push(record);
+      record = "";
+      if (char === "\r") i += 1;
+    } else {
+      record += char;
+    }
+  }
+  if (record) records.push(record);
+  return records;
 }
 
 export function toCsv(rows) {

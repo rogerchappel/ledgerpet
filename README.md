@@ -55,6 +55,7 @@ After installing a GitHub release package asset:
 ## What it does
 
 - Loads local synthetic fixture files: `metadata.json`, `vendors.json`, `invoices.csv`, `payments.csv`.
+- Supports standard quoted CSV fixture fields containing commas, escaped quotes, or multiple lines.
 - Refuses fixtures missing the watermark: `LEDGERPET_SYNTHETIC_SAMPLE_DO_NOT_USE_AS_REAL_FINANCIAL_DATA`.
 - Requires every invoice and payment `amount` to be a finite number; decimal and zero values are valid.
 - Injects deterministic scenarios such as duplicate invoices, ghost payments, vendor bank swaps, weekend rush payments, and round-dollar splits.
