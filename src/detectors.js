@@ -1,4 +1,7 @@
+import { validateFixture } from "./fixtures.js";
+
 export function detectAnomalies(fixture) {
+  validateFixture(fixture);
   return [
     ...detectDuplicateInvoices(fixture),
     ...detectUnmatchedPayments(fixture),

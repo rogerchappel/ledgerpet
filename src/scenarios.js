@@ -1,5 +1,6 @@
 import { SCENARIOS } from "./constants.js";
 import { LedgerpetError } from "./errors.js";
+import { validateFixture } from "./fixtures.js";
 
 export function listScenarios() {
   return [...SCENARIOS];
@@ -9,6 +10,7 @@ export function generateScenario(fixture, scenario = "duplicate-invoice") {
   if (!SCENARIOS.includes(scenario)) {
     throw new LedgerpetError(`Unknown scenario '${scenario}'. Try one of: ${SCENARIOS.join(", ")}`, "UNKNOWN_SCENARIO");
   }
+  validateFixture(fixture);
   const clone = structuredClone(fixture);
   const findings = [];
   if (scenario === "duplicate-invoice") duplicateInvoice(clone, findings);
