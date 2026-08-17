@@ -17,6 +17,16 @@ test("detectAnomalies finds vendor bank changes", async () => {
   assert.ok(findings.some((finding) => finding.type === "vendor_bank_change"));
 });
 
+test("detectAnomalies rejects malformed dates instead of suppressing findings", async () => {
+  const fixture = await loadFixture("fixtures/sample");
+  fixture.invoices[0].due_date = "not-a-date";
+  assert.throws(
+    () => detectAnomalies(fixture),
+    (error) => error.code === "INVALID_FIXTURE_SCHEMA" &&
+      error.message === "invoices:2 field due_date must be a valid calendar date in YYYY-MM-DD format"
+  );
+});
+
 test("detectDuplicateInvoices is independent of invoice order", () => {
   const invoiceA = { invoice_id: "A", vendor_id: "VEN-1", amount: 100, category: "supplies", due_date: "2026-01-01" };
   const invoiceB = { invoice_id: "B", vendor_id: "VEN-1", amount: 100, category: "supplies", due_date: "2026-01-20" };
