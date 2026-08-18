@@ -123,6 +123,13 @@ Dates use strict `YYYY-MM-DD` calendar values, so impossible dates such as
 with code `INVALID_FIXTURE_SCHEMA` and a row plus field diagnostic; invalid
 amounts use `INVALID_FIXTURE_AMOUNT`.
 
+Collections may otherwise be empty, but scenarios that modify an existing
+entity have explicit minimums: `duplicate-invoice` requires at least one
+invoice and `vendor-bank-swap` requires at least one vendor. Missing scenario
+seed entities throw `LedgerpetError` with code
+`SCENARIO_FIXTURE_REQUIREMENT`; the other scenarios generate their own rows
+and do not require a non-empty collection.
+
 ## Development
 
 ```sh
