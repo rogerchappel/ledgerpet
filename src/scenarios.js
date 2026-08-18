@@ -2,6 +2,11 @@ import { SCENARIOS } from "./constants.js";
 import { LedgerpetError } from "./errors.js";
 import { validateFixture } from "./fixtures.js";
 
+const SCENARIO_REQUIREMENTS = {
+  "duplicate-invoice": { collection: "invoices", entity: "invoice" },
+  "vendor-bank-swap": { collection: "vendors", entity: "vendor" }
+};
+
 export function listScenarios() {
   return [...SCENARIOS];
 }
@@ -11,6 +16,7 @@ export function generateScenario(fixture, scenario = "duplicate-invoice") {
     throw new LedgerpetError(`Unknown scenario '${scenario}'. Try one of: ${SCENARIOS.join(", ")}`, "UNKNOWN_SCENARIO");
   }
   validateFixture(fixture);
+  requireScenarioSeed(fixture, scenario);
   const clone = structuredClone(fixture);
   const findings = [];
   if (scenario === "duplicate-invoice") duplicateInvoice(clone, findings);
@@ -20,6 +26,16 @@ export function generateScenario(fixture, scenario = "duplicate-invoice") {
   if (scenario === "round-dollar-split") roundDollarSplit(clone, findings);
   clone.metadata = { ...clone.metadata, scenario, generatedBy: "ledgerpet", synthetic: true };
   return { fixture: clone, expectedFindings: findings };
+}
+
+function requireScenarioSeed(fixture, scenario) {
+  const requirement = SCENARIO_REQUIREMENTS[scenario];
+  if (requirement && fixture[requirement.collection].length === 0) {
+    throw new LedgerpetError(
+      `Scenario '${scenario}' requires at least one ${requirement.entity} in the fixture`,
+      "SCENARIO_FIXTURE_REQUIREMENT"
+    );
+  }
 }
 
 function duplicateInvoice(fixture, findings) {
