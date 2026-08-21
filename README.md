@@ -128,7 +128,9 @@ entity have explicit minimums: `duplicate-invoice` requires at least one
 invoice and `vendor-bank-swap` requires at least one vendor. Missing scenario
 seed entities throw `LedgerpetError` with code
 `SCENARIO_FIXTURE_REQUIREMENT`; the other scenarios generate their own rows
-and do not require a non-empty collection.
+and do not require a non-empty collection. In particular, `weekend-rush`
+adds its supporting `VEN-NOVA` vendor and `INV-1004` invoice when either is
+absent, so the generated payment remains internally matched.
 
 ## Development
 
