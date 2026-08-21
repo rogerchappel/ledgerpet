@@ -58,6 +58,26 @@ function vendorBankSwap(fixture, findings) {
 }
 
 function weekendRush(fixture, findings) {
+  if (!fixture.vendors.some((vendor) => vendor.vendor_id === "VEN-NOVA")) {
+    fixture.vendors.push({
+      vendor_id: "VEN-NOVA",
+      name: "Nova Facilities Lab",
+      category: "facilities",
+      bank_account_last4: "2048",
+      synthetic: true
+    });
+  }
+  if (!fixture.invoices.some((invoice) => invoice.invoice_id === "INV-1004")) {
+    fixture.invoices.push({
+      invoice_id: "INV-1004",
+      vendor_id: "VEN-NOVA",
+      issued_at: "2026-02-08",
+      due_date: "2026-02-22",
+      amount: 9750,
+      category: "facilities",
+      synthetic: true
+    });
+  }
   fixture.payments.push({ payment_id: "PAY-WEEKEND-7001", invoice_id: "INV-1004", vendor_id: "VEN-NOVA", paid_at: "2026-02-15", amount: 9800, method: "instant", synthetic: true });
   findings.push({ id: "ANOM-WEEKEND-001", type: "weekend_rush_payment", severity: "medium", evidence: ["PAY-WEEKEND-7001", "2026-02-15"], hint: "Unusual weekend instant payment." });
 }
