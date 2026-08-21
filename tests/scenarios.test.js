@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { loadFixture, generateScenario, listScenarios } from "../src/index.js";
+import { detectAnomalies, loadFixture, generateScenario, listScenarios, scoreFindings } from "../src/index.js";
 
 test("all scenarios generate expected findings", async () => {
   const base = await loadFixture("fixtures/sample");
@@ -36,4 +36,33 @@ test("vendor-bank-swap requires a seed vendor", async () => {
       error.code === "SCENARIO_FIXTURE_REQUIREMENT" &&
       error.message === "Scenario 'vendor-bank-swap' requires at least one vendor in the fixture"
   );
+});
+
+test("weekend-rush generates supporting rows for an empty fixture", () => {
+  const base = {
+    metadata: { name: "empty custom fixture", watermark: "SYNTHETIC DATA - NOT REAL FINANCIAL RECORDS" },
+    vendors: [],
+    invoices: [],
+    payments: []
+  };
+
+  const generated = generateScenario(base, "weekend-rush");
+  const actual = detectAnomalies(generated.fixture);
+  const expectedTypes = generated.expectedFindings.map((finding) => finding.type);
+  const actualTypes = actual.map((finding) => finding.type);
+
+  assert.deepEqual(expectedTypes, ["weekend_rush_payment"]);
+  assert.deepEqual(actualTypes, expectedTypes);
+  assert.equal(actual.some((finding) => finding.type === "unmatched_payment"), false);
+  assert.deepEqual(scoreFindings(generated.expectedFindings, actual), {
+    score: 100,
+    precision: 1,
+    recall: 1,
+    truePositives: 1,
+    falsePositives: 0,
+    missed: 0,
+    matchedTypes: ["weekend_rush_payment"],
+    missedTypes: [],
+    extraTypes: []
+  });
 });
