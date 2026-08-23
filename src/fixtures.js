@@ -32,7 +32,9 @@ export function normalizeFixture(fixture, sources = {}) {
     amount: parseAmount(payment.amount, sources.payments ?? "payments", index),
     synthetic: true
   }));
-  return { ...fixture, vendors, invoices, payments };
+  const normalized = { ...fixture, vendors, invoices, payments };
+  validateRelationships(normalized, sources);
+  return normalized;
 }
 
 export function validateFixture(fixture, sources = {}) {
@@ -65,7 +67,39 @@ export function validateFixture(fixture, sources = {}) {
     requireText(row, "method", location);
     if (!PAYMENT_METHODS.has(row.method)) fail(`${location} field method must be one of: ach, wire, instant`);
   });
+
   return fixture;
+}
+
+function validateRelationships(fixture, sources) {
+  const vendorsById = uniqueRows(fixture.vendors, "vendor_id", sources.vendors ?? "vendors", 1);
+  const invoicesById = uniqueRows(fixture.invoices, "invoice_id", sources.invoices ?? "invoices", 2);
+  uniqueRows(fixture.payments, "payment_id", sources.payments ?? "payments", 2);
+
+  fixture.invoices.forEach((row, index) => {
+    if (!vendorsById.has(row.vendor_id)) {
+      fail(`${sources.invoices ?? "invoices"}:${index + 2} field vendor_id references unknown vendor ${row.vendor_id}`);
+    }
+  });
+  fixture.payments.forEach((row, index) => {
+    const location = `${sources.payments ?? "payments"}:${index + 2}`;
+    const invoice = invoicesById.get(row.invoice_id);
+    if (!invoice) fail(`${location} field invoice_id references unknown invoice ${row.invoice_id}`);
+    if (!vendorsById.has(row.vendor_id)) fail(`${location} field vendor_id references unknown vendor ${row.vendor_id}`);
+    if (row.vendor_id !== invoice.vendor_id) {
+      fail(`${location} field vendor_id ${row.vendor_id} does not match invoice ${row.invoice_id} vendor_id ${invoice.vendor_id}`);
+    }
+  });
+}
+
+function uniqueRows(rows, field, source, firstRow) {
+  const byId = new Map();
+  rows.forEach((row, index) => {
+    const value = row[field];
+    if (byId.has(value)) fail(`${source}:${index + firstRow} field ${field} duplicates ${value}`);
+    byId.set(value, row);
+  });
+  return byId;
 }
 
 function requireCollection(fixture, field, source) {

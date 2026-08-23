@@ -42,7 +42,7 @@ test("loadFixture identifies non-finite invoice and payment amounts", async () =
 test("normalizeFixture accepts decimal and zero amounts", () => {
   const fixture = normalizeFixture({
     metadata: { name: "test" },
-    vendors: [],
+    vendors: [vendor("VEN-1")],
     invoices: [{ invoice_id: "INV-1", vendor_id: "VEN-1", issued_at: "2026-01-01", due_date: "2026-01-02", amount: "12.50", category: "test" }],
     payments: [{ payment_id: "PAY-1", invoice_id: "INV-1", vendor_id: "VEN-1", paid_at: "2026-01-02", amount: "0", method: "ach" }]
   });
@@ -88,10 +88,83 @@ test("normalizeFixture rejects unsupported payment methods", () => {
   );
 });
 
+test("normalizeFixture enforces unique identifiers with row and field diagnostics", () => {
+  for (const [collection, duplicate, message] of [
+    ["vendors", vendor("VEN-1"), "vendors:2 field vendor_id duplicates VEN-1"],
+    ["invoices", invoice("INV-1", "VEN-1"), "invoices:3 field invoice_id duplicates INV-1"],
+    ["payments", payment("PAY-1", "INV-1", "VEN-1"), "payments:3 field payment_id duplicates PAY-1"]
+  ]) {
+    const fixture = validFixture();
+    fixture[collection].push(duplicate);
+    assert.throws(() => normalizeFixture(fixture), invalidSchema(message));
+  }
+});
+
+test("normalizeFixture rejects invoices referencing unknown vendors", () => {
+  const fixture = validFixture();
+  fixture.invoices[0].vendor_id = "VEN-MISSING";
+  assert.throws(
+    () => normalizeFixture(fixture),
+    invalidSchema("invoices:2 field vendor_id references unknown vendor VEN-MISSING")
+  );
+});
+
+test("normalizeFixture rejects payments referencing unknown invoices or vendors", () => {
+  for (const [field, value, message] of [
+    ["invoice_id", "INV-MISSING", "payments:2 field invoice_id references unknown invoice INV-MISSING"],
+    ["vendor_id", "VEN-MISSING", "payments:2 field vendor_id references unknown vendor VEN-MISSING"]
+  ]) {
+    const fixture = validFixture();
+    fixture.payments[0][field] = value;
+    assert.throws(() => normalizeFixture(fixture), invalidSchema(message));
+  }
+});
+
+test("normalizeFixture rejects payment vendors that differ from their invoice", () => {
+  const fixture = validFixture();
+  fixture.vendors.push(vendor("VEN-2"));
+  fixture.payments[0].vendor_id = "VEN-2";
+  assert.throws(
+    () => normalizeFixture(fixture),
+    invalidSchema("payments:2 field vendor_id VEN-2 does not match invoice INV-1 vendor_id VEN-1")
+  );
+});
+
+test("normalizeFixture accepts a complete relationship graph", () => {
+  const fixture = normalizeFixture(validFixture());
+  assert.equal(fixture.invoices[0].vendor_id, fixture.vendors[0].vendor_id);
+  assert.equal(fixture.payments[0].vendor_id, fixture.invoices[0].vendor_id);
+});
+
+function validFixture() {
+  return {
+    metadata: { name: "test" },
+    vendors: [vendor("VEN-1")],
+    invoices: [invoice("INV-1", "VEN-1")],
+    payments: [payment("PAY-1", "INV-1", "VEN-1")]
+  };
+}
+
+function vendor(vendorId) {
+  return { vendor_id: vendorId, name: "Vendor", category: "test", bank_account_last4: "1234" };
+}
+
+function invoice(invoiceId, vendorId) {
+  return { invoice_id: invoiceId, vendor_id: vendorId, issued_at: "2026-01-01", due_date: "2026-01-02", amount: "12.50", category: "test" };
+}
+
+function payment(paymentId, invoiceId, vendorId) {
+  return { payment_id: paymentId, invoice_id: invoiceId, vendor_id: vendorId, paid_at: "2026-01-02", amount: "12.50", method: "ach" };
+}
+
+function invalidSchema(message) {
+  return (error) => error.code === "INVALID_FIXTURE_SCHEMA" && error.message === message;
+}
+
 async function makeFixture() {
   const dir = await mkdtemp(join(tmpdir(), "ledgerpet-amount-"));
   await writeFile(join(dir, "metadata.json"), JSON.stringify({ name: "test", watermark: SYNTHETIC_WATERMARK }));
-  await writeFile(join(dir, "vendors.json"), "[]");
+  await writeFile(join(dir, "vendors.json"), JSON.stringify([vendor("VEN-1")]));
   await writeFile(join(dir, "invoices.csv"), "invoice_id,vendor_id,issued_at,due_date,amount,category\n");
   await writeFile(join(dir, "payments.csv"), "payment_id,invoice_id,vendor_id,paid_at,amount,method\n");
   return dir;
