@@ -118,6 +118,13 @@ require non-empty `payment_id`, `invoice_id`, and `vendor_id`, a finite
 `amount`, a `paid_at` calendar date, and a method of `ach`, `wire`, or
 `instant`. Categories are free-form non-empty strings.
 
+Each invoice `vendor_id` must identify a vendor in `vendors.json`. Each payment
+must identify an existing invoice and vendor, and its vendor must match the
+vendor on that invoice. Vendor, invoice, and payment identifiers are unique;
+duplicates are rejected rather than resolved by first/last-row precedence.
+Relationship and duplicate errors report the source row and field so custom
+fixtures can be corrected deterministically.
+
 Dates use strict `YYYY-MM-DD` calendar values, so impossible dates such as
 `2026-02-30` are rejected. Invalid shapes and fields throw `LedgerpetError`
 with code `INVALID_FIXTURE_SCHEMA` and a row plus field diagnostic; invalid
