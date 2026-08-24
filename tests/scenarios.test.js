@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { detectAnomalies, loadFixture, generateScenario, listScenarios, scoreFindings } from "../src/index.js";
+import { detectAnomalies, loadFixture, generateScenario, listScenarios, normalizeFixture, scoreFindings } from "../src/index.js";
 
 test("all scenarios generate expected findings", async () => {
   const base = await loadFixture("fixtures/sample");
@@ -65,4 +65,32 @@ test("weekend-rush generates supporting rows for an empty fixture", () => {
     missedTypes: [],
     extraTypes: []
   });
+});
+
+test("duplicate-invoice allocates a collision-free invoice identifier", async () => {
+  const base = await loadFixture("fixtures/sample");
+  const seed = base.invoices.find((row) => row.invoice_id === "INV-1003");
+  base.invoices.push({ ...seed, invoice_id: "INV-1003-DUP" });
+  const generated = generateScenario(base, "duplicate-invoice");
+  assert.equal(generated.expectedFindings[0].evidence[1], "INV-1003-DUP-2");
+  assert.doesNotThrow(() => normalizeFixture(generated.fixture));
+});
+
+test("weekend-rush preserves pre-existing identifier relationships", async () => {
+  const base = await loadFixture("fixtures/sample");
+  const nova = base.vendors.find((vendor) => vendor.vendor_id === "VEN-NOVA");
+  assert.ok(nova);
+  const reservedInvoice = base.invoices.find((invoice) => invoice.invoice_id === "INV-1004");
+  reservedInvoice.vendor_id = base.vendors[0].vendor_id;
+  base.payments.push({ payment_id: "PAY-WEEKEND-7001", invoice_id: base.invoices[0].invoice_id, vendor_id: base.invoices[0].vendor_id, paid_at: "2026-02-02", amount: 10, method: "ach" });
+  const generated = generateScenario(base, "weekend-rush");
+  assert.deepEqual(generated.expectedFindings[0].evidence, ["PAY-WEEKEND-7001-2", "2026-02-15"]);
+  assert.doesNotThrow(() => normalizeFixture(generated.fixture));
+});
+
+test("round-dollar-split creates valid support rows for an empty fixture", () => {
+  const base = { metadata: { name: "empty", watermark: "SYNTHETIC DATA - NOT REAL FINANCIAL RECORDS" }, vendors: [], invoices: [], payments: [] };
+  const generated = generateScenario(base, "round-dollar-split");
+  assert.equal(generated.fixture.vendors[0].vendor_id, "VEN-ORBIT");
+  assert.doesNotThrow(() => normalizeFixture(generated.fixture));
 });
