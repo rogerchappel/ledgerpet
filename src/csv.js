@@ -1,7 +1,7 @@
 import { LedgerpetError } from "./errors.js";
 
 export function parseCsv(text, source = "csv") {
-  const lines = splitCsvRecords(text.replace(/^\uFEFF/, "").trim()).filter(Boolean);
+  const lines = splitCsvRecords(text.replace(/^\uFEFF/, "")).filter((line) => line !== "");
   if (lines.length === 0) return [];
   const headers = splitCsvLine(lines[0]);
   return lines.slice(1).map((line, index) => {
@@ -26,15 +26,15 @@ function splitCsvRecords(text) {
     } else if (char === '"') {
       inQuotes = !inQuotes;
       record += char;
-    } else if ((char === "\n" || (char === "\r" && next === "\n")) && !inQuotes) {
+    } else if ((char === "\r" || char === "\n") && !inQuotes) {
       records.push(record);
       record = "";
-      if (char === "\r") i += 1;
+      if (char === "\r" && next === "\n") i += 1;
     } else {
       record += char;
     }
   }
-  if (record) records.push(record);
+  records.push(record);
   return records;
 }
 
@@ -63,12 +63,15 @@ function splitCsvLine(line) {
       cell += char;
     }
   }
-  if (inQuotes) throw new LedgerpetError(`Unclosed quote in CSV line: ${line}`, "CSV_QUOTE");
+  if (inQuotes) {
+    const displayLine = line.replace(/(?:\r\n|\r|\n)$/, "");
+    throw new LedgerpetError(`Unclosed quote in CSV line: ${displayLine}`, "CSV_QUOTE");
+  }
   cells.push(cell);
   return cells;
 }
 
 function quoteCsv(value) {
   const text = String(value ?? "");
-  return /[",\n]/.test(text) ? `"${text.replaceAll('"', '""')}"` : text;
+  return /[",\r\n]/.test(text) ? `"${text.replaceAll('"', '""')}"` : text;
 }
