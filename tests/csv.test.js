@@ -37,3 +37,32 @@ test("parseCsv reports unterminated multiline records", () => {
 test("toCsv quotes unsafe values", () => {
   assert.equal(toCsv([{ id: 1, name: "Acme, Inc" }]), 'id,name\n1,"Acme, Inc"\n');
 });
+
+test("parseCsv accepts CR-only record separators", () => {
+  assert.deepEqual(parseCsv("id,note\r1,value\r2,next", "classic-mac.csv"), [
+    { id: "1", note: "value" },
+    { id: "2", note: "next" },
+  ]);
+});
+
+test("parseCsv preserves unquoted field edge whitespace", () => {
+  assert.deepEqual(parseCsv("id,note\n 1 ,  keep me  \n", "spaces.csv"), [
+    { id: " 1 ", note: "  keep me  " },
+  ]);
+});
+
+test("toCsv round trips unquoted field edge whitespace", () => {
+  const rows = [{ id: " 1", note: "tail   " }];
+  assert.deepEqual(parseCsv(toCsv(rows)), rows);
+});
+
+test("parseCsv preserves CR and LF inside quoted multiline fields", () => {
+  assert.deepEqual(parseCsv('id,note\r1,"first\rsecond\nthird\r\nfourth"\r', "multiline.csv"), [
+    { id: "1", note: "first\rsecond\nthird\r\nfourth" },
+  ]);
+});
+
+test("toCsv quotes and round trips fields containing CR", () => {
+  const rows = [{ id: "1", note: "first\rsecond" }];
+  assert.deepEqual(parseCsv(toCsv(rows)), rows);
+});
