@@ -47,8 +47,11 @@ function duplicateInvoice(fixture, findings) {
 }
 
 function ghostPayment(fixture, findings) {
-  fixture.payments.push({ payment_id: "PAY-GHOST-9001", invoice_id: "INV-NOT-FOUND", vendor_id: "VEN-404", paid_at: "2026-02-13", amount: 4242.42, method: "wire", synthetic: true });
-  findings.push({ id: "ANOM-GHOST-001", type: "unmatched_payment", severity: "critical", evidence: ["PAY-GHOST-9001", "INV-NOT-FOUND"], hint: "Payment references a missing invoice and unknown vendor." });
+  const paymentId = uniqueId(fixture.payments, "payment_id", "PAY-GHOST-9001");
+  const invoiceId = uniqueId(fixture.invoices, "invoice_id", "INV-NOT-FOUND");
+  const vendorId = uniqueId(fixture.vendors, "vendor_id", "VEN-404");
+  fixture.payments.push({ payment_id: paymentId, invoice_id: invoiceId, vendor_id: vendorId, paid_at: "2026-02-13", amount: 4242.42, method: "wire", synthetic: true });
+  findings.push({ id: "ANOM-GHOST-001", type: "unmatched_payment", severity: "critical", evidence: [paymentId, invoiceId, vendorId], hint: "Payment references a missing invoice and unknown vendor." });
 }
 
 function vendorBankSwap(fixture, findings) {
