@@ -76,6 +76,56 @@ test("duplicate-invoice allocates a collision-free invoice identifier", async ()
   assert.doesNotThrow(() => normalizeFixture(generated.fixture));
 });
 
+test("ghost-payment allocates collision-free missing references and remains detectable", async () => {
+  const base = await loadFixture("fixtures/sample");
+  base.vendors.push({
+    vendor_id: "VEN-404",
+    name: "Reserved vendor",
+    category: "testing",
+    bank_account_last4: "0404"
+  });
+  base.invoices.push({
+    invoice_id: "INV-NOT-FOUND",
+    vendor_id: "VEN-404",
+    issued_at: "2026-02-01",
+    due_date: "2026-02-28",
+    amount: 42,
+    category: "testing"
+  });
+  base.payments.push({
+    payment_id: "PAY-GHOST-9001",
+    invoice_id: "INV-NOT-FOUND",
+    vendor_id: "VEN-404",
+    paid_at: "2026-02-02",
+    amount: 42,
+    method: "ach"
+  });
+
+  const generated = generateScenario(base, "ghost-payment");
+  const ghost = generated.fixture.payments.at(-1);
+  const actual = detectAnomalies(generated.fixture).filter((finding) => finding.evidence.includes(ghost.payment_id));
+
+  assert.deepEqual(
+    { payment_id: ghost.payment_id, invoice_id: ghost.invoice_id, vendor_id: ghost.vendor_id },
+    { payment_id: "PAY-GHOST-9001-2", invoice_id: "INV-NOT-FOUND-2", vendor_id: "VEN-404-2" }
+  );
+  assert.deepEqual(generated.expectedFindings[0].evidence, [ghost.payment_id, ghost.invoice_id, ghost.vendor_id]);
+  assert.equal(actual.length, 1);
+  assert.equal(actual[0].type, "unmatched_payment");
+  assert.deepEqual(scoreFindings(generated.expectedFindings, actual), {
+    score: 100,
+    precision: 1,
+    recall: 1,
+    truePositives: 1,
+    falsePositives: 0,
+    missed: 0,
+    matchedTypes: ["unmatched_payment"],
+    missedTypes: [],
+    extraTypes: []
+  });
+  assert.equal(new Set(generated.fixture.payments.map((payment) => payment.payment_id)).size, generated.fixture.payments.length);
+});
+
 test("weekend-rush preserves pre-existing identifier relationships", async () => {
   const base = await loadFixture("fixtures/sample");
   const nova = base.vendors.find((vendor) => vendor.vendor_id === "VEN-NOVA");
