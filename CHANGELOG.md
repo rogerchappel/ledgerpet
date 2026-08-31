@@ -11,6 +11,10 @@ format and uses semantic versioning when versioned releases are published.
 
 - Initial project setup.
 
+### Fixed
+
+- Make the `ghost-payment` scenario allocate collision-free payment and missing-reference identifiers when fixtures already use its preferred synthetic IDs.
+
 ## Release Links
 
 - Unreleased:
