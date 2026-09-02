@@ -113,8 +113,8 @@ and `payments.csv`. Metadata must be an object with the synthetic watermark.
 Vendors require non-empty `vendor_id`, `name`, `category`, and
 `bank_account_last4` strings; optional `bank_changed_at` must be a calendar
 date. Invoice rows require non-empty `invoice_id`, `vendor_id`, and `category`,
-a finite `amount`, and `issued_at` and `due_date` calendar dates. Payment rows
-require non-empty `payment_id`, `invoice_id`, and `vendor_id`, a finite
+a non-blank finite `amount`, and `issued_at` and `due_date` calendar dates. Payment rows
+require non-empty `payment_id`, `invoice_id`, and `vendor_id`, a non-blank finite
 `amount`, a `paid_at` calendar date, and a method of `ach`, `wire`, or
 `instant`. Categories are free-form non-empty strings.
 
@@ -128,7 +128,7 @@ fixtures can be corrected deterministically.
 Dates use strict `YYYY-MM-DD` calendar values, so impossible dates such as
 `2026-02-30` are rejected. Invalid shapes and fields throw `LedgerpetError`
 with code `INVALID_FIXTURE_SCHEMA` and a row plus field diagnostic; invalid
-amounts use `INVALID_FIXTURE_AMOUNT`.
+amounts, including missing or whitespace-only values, use `INVALID_FIXTURE_AMOUNT`.
 
 Collections may otherwise be empty, but scenarios that modify an existing
 entity have explicit minimums: `duplicate-invoice` requires at least one
