@@ -130,6 +130,9 @@ function fail(message) {
 }
 
 function parseAmount(value, source, index) {
+  if (typeof value === "string" && value.trim() === "") {
+    throw new LedgerpetError(`${source}:${index + 2} field amount must be a finite number`, "INVALID_FIXTURE_AMOUNT");
+  }
   const amount = Number(value);
   if (!Number.isFinite(amount)) {
     throw new LedgerpetError(`${source}:${index + 2} field amount must be a finite number`, "INVALID_FIXTURE_AMOUNT");
