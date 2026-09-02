@@ -39,6 +39,21 @@ test("loadFixture identifies non-finite invoice and payment amounts", async () =
   }
 });
 
+test("loadFixture rejects blank invoice and payment amounts", async () => {
+  for (const [file, header, row] of [
+    ["invoices.csv", "invoice_id,vendor_id,issued_at,due_date,amount,category", "INV-1,VEN-1,2026-01-01,2026-01-02,,test"],
+    ["payments.csv", "payment_id,invoice_id,vendor_id,paid_at,amount,method", "PAY-1,INV-1,VEN-1,2026-01-02,   ,wire"]
+  ]) {
+    const dir = await makeFixture();
+    await writeFile(join(dir, file), `${header}\n${row}\n`);
+    await assert.rejects(
+      () => loadFixture(dir),
+      (error) => error.code === "INVALID_FIXTURE_AMOUNT" &&
+        error.message === `${join(dir, file)}:2 field amount must be a finite number`
+    );
+  }
+});
+
 test("normalizeFixture accepts decimal and zero amounts", () => {
   const fixture = normalizeFixture({
     metadata: { name: "test" },
@@ -48,6 +63,18 @@ test("normalizeFixture accepts decimal and zero amounts", () => {
   });
   assert.equal(fixture.invoices[0].amount, 12.5);
   assert.equal(fixture.payments[0].amount, 0);
+});
+
+test("normalizeFixture rejects missing and whitespace-only amounts", () => {
+  for (const [collection, value] of [["invoices", ""], ["payments", "   "]]) {
+    const fixture = validFixture();
+    fixture[collection][0].amount = value;
+    assert.throws(
+      () => normalizeFixture(fixture),
+      (error) => error.code === "INVALID_FIXTURE_AMOUNT" &&
+        error.message === `${collection}:2 field amount must be a finite number`
+    );
+  }
 });
 
 test("loadFixture rejects invalid and impossible calendar dates with row diagnostics", async () => {
