@@ -7,6 +7,36 @@ test("parseCsv handles quoted commas", () => {
   assert.deepEqual(rows, [{ id: "1", name: "Acme, Inc" }]);
 });
 
+test("parseCsv handles escaped quotes and multiline quoted fields", () => {
+  const rows = parseCsv('id,name,notes\n1,"Acme ""North""","first line\nsecond line"\n', "demo.csv");
+  assert.deepEqual(rows, [{ id: "1", name: 'Acme "North"', notes: "first line\nsecond line" }]);
+});
+
+test("parseCsv rejects quotes in unquoted fields", () => {
+  assert.throws(
+    () => parseCsv('id,name\n1,Ac"me\n', "probe.csv"),
+    (error) => error.code === "CSV_QUOTE" && error.message.includes("probe.csv:2")
+  );
+});
+
+test("parseCsv rejects characters after a closing quote", () => {
+  assert.throws(
+    () => parseCsv('id,name\n1,"Acme"tail\n', "probe.csv"),
+    (error) => error.code === "CSV_QUOTE" && error.message.includes("probe.csv:2")
+  );
+});
+
+test("parseCsv rejects blank and duplicate headers", () => {
+  assert.throws(
+    () => parseCsv("id,id\n1,2\n", "duplicate.csv"),
+    (error) => error.code === "CSV_HEADER" && error.message.includes('duplicate header "id"')
+  );
+  assert.throws(
+    () => parseCsv("id,\n1,2\n", "blank.csv"),
+    (error) => error.code === "CSV_HEADER" && error.message.includes("blank header")
+  );
+});
+
 test("parseCsv handles multiline quoted fields", () => {
   const rows = parseCsv('id,name\n1,"Acme\nHoldings"\n', "demo.csv");
   assert.deepEqual(rows, [{ id: "1", name: "Acme\nHoldings" }]);
