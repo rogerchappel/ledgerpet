@@ -60,7 +60,7 @@ test("parseCsv handles CRLF record separators", () => {
 test("parseCsv reports unterminated multiline records", () => {
   assert.throws(
     () => parseCsv('id,name\n1,"Acme\nHoldings\n'),
-    (error) => error.code === "CSV_QUOTE" && error.message === 'Unclosed quote in CSV line: 1,"Acme\nHoldings',
+    (error) => error.code === "CSV_QUOTE" && error.message === 'csv:2 has an unclosed quote: 1,"Acme\nHoldings',
   );
 });
 
