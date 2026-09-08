@@ -125,6 +125,12 @@ duplicates are rejected rather than resolved by first/last-row precedence.
 Relationship and duplicate errors report the source row and field so custom
 fixtures can be corrected deterministically.
 
+CSV headers must be non-blank and unique. Quoted fields may contain commas,
+escaped quotes, and line breaks, but a quote may only open at the start of a
+field and only a comma or record ending may follow its closing quote. Invalid
+headers and quoting fail with `CSV_HEADER` or `CSV_QUOTE` and identify the
+fixture source and record number.
+
 Dates use strict `YYYY-MM-DD` calendar values, so impossible dates such as
 `2026-02-30` are rejected. Invalid shapes and fields throw `LedgerpetError`
 with code `INVALID_FIXTURE_SCHEMA` and a row plus field diagnostic; invalid
