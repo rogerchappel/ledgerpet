@@ -40,11 +40,19 @@ Installing a downloaded tarball this way does not ask npm to resolve a
 
 ## Quickstart
 
+From a source checkout, run:
+
 ```sh
 node src/cli.js scenarios
 node src/cli.js inspect fixtures/sample --scenario ghost-payment --output out/ghost --format markdown
 cat out/ghost/report.md
 ```
+
+The generated reports are written to `out/` in your local checkout (or the
+output directory you specify). They are generated artifacts, not files included
+in the npm package or GitHub release asset. When using the installed CLI, choose
+an output directory that exists and is writable in your current working
+directory, for example `out/ghost`.
 
 After installing a GitHub release package asset:
 
