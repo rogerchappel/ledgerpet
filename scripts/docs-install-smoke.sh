@@ -11,12 +11,16 @@ consumer_dir="$smoke_root/consumer"
 output_dir="$smoke_root/output"
 mkdir -p "$package_dir" "$consumer_dir"
 
+# Match the README's versioned release asset name, then install that local tarball.
 package_name=$(npm pack "$repo_root" --pack-destination "$package_dir" --silent)
+version=$(node -p "JSON.parse(require('node:fs').readFileSync('$repo_root/package.json', 'utf8')).version")
+release_asset="ledgerpet-$version.tgz"
+mv "$package_dir/$package_name" "$package_dir/$release_asset"
 
 cd "$consumer_dir"
 npm init --yes --silent >/dev/null
 npm install --offline --ignore-scripts --no-audit --no-fund \
-  "$package_dir/$package_name" >/dev/null
+  "$package_dir/$release_asset" >/dev/null
 
 help_output=$(./node_modules/.bin/ledgerpet --help)
 grep -F 'ledgerpet inspect <fixture-dir>' <<<"$help_output" >/dev/null
@@ -27,4 +31,4 @@ grep -F 'ledgerpet inspect <fixture-dir>' <<<"$help_output" >/dev/null
 
 test -s "$output_dir/report.json"
 test -s "$output_dir/report.md"
-echo "Documentation install smoke passed for $package_name"
+echo "Documentation install smoke passed for $release_asset"
