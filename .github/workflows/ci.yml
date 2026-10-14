@@ -63,6 +63,9 @@ jobs:
             npm install
           fi
 
+      - name: Validate required files and project readiness
+        run: bash scripts/validate.sh
+
       - name: Validate package scripts
         run: npm run check
 
