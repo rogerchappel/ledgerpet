@@ -96,3 +96,16 @@ test("toCsv quotes and round trips fields containing CR", () => {
   const rows = [{ id: "1", note: "first\rsecond" }];
   assert.deepEqual(parseCsv(toCsv(rows)), rows);
 });
+
+for (const [name, newline] of [["LF", "\n"], ["CRLF", "\r\n"]]) {
+  test(`parseCsv rejects blank ${name} records with the correct row number`, () => {
+    assert.throws(
+      () => parseCsv(["id,name", "1,Ada", "", "2,Lin"].join(newline), "blank.csv"),
+      (error) => error.code === "CSV_SHAPE" && error.message === "blank.csv:3 has 1 cells, expected 2",
+    );
+  });
+}
+
+test("parseCsv accepts a trailing record terminator without inventing a blank row", () => {
+  assert.deepEqual(parseCsv("id,name\r\n1,Ada\r\n"), [{ id: "1", name: "Ada" }]);
+});

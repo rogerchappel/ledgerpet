@@ -1,7 +1,9 @@
 import { LedgerpetError } from "./errors.js";
 
 export function parseCsv(text, source = "csv") {
-  const lines = splitCsvRecords(text.replace(/^\uFEFF/, "")).filter((line) => line !== "");
+  const lines = splitCsvRecords(text.replace(/^\uFEFF/, ""));
+  if (lines.at(-1) === "") lines.pop();
+  if (lines.length === 1 && lines[0] === "") return [];
   if (lines.length === 0) return [];
   const headers = splitCsvLine(lines[0], source, 1);
   validateHeaders(headers, source);
